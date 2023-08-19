@@ -4,6 +4,9 @@ import pytest
 from django.utils import timezone
 from news.models import Comment, News
 
+from news.forms import BAD_WORDS
+
+COMMENT_TEXT = 'Текст комментария'
 
 @pytest.fixture
 def author(django_user_model):
@@ -75,3 +78,16 @@ def id_news_for_args(news):
 def id_comment_for_args(comment):
     """Фикстура для reverse для args id комментария."""
     return comment.id,
+
+
+@pytest.fixture
+def form_data():
+    return {
+        'text': 'Новый текст комментария'
+    }
+
+
+@pytest.fixture
+def bad_words_data():
+    bad_words_data = {'text': f'Какой-то текст, {BAD_WORDS[0]}, еще текст'}
+    return bad_words_data
