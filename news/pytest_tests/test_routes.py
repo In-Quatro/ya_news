@@ -11,7 +11,7 @@ from django.urls import reverse
     'name, args',
     (
         ('news:home', None),
-        ('news:detail', pytest.lazy_fixture('id_new_for_args')),
+        ('news:detail', pytest.lazy_fixture('id_news_for_args')),
         ('users:login', None),
         ('users:logout', None),
         ('users:signup', None),
