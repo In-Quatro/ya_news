@@ -17,8 +17,16 @@ from django.urls import reverse
         ('users:signup', None),
     ),
 )
-def test_pages_availability_for_anonymous_user(client, name, args):
-    """Проверяем доступность страниц для неавторизованного пользователя."""
+def test_pages_availability_for_anonymous_user(
+        client,
+        name,
+        args
+):
+    """
+    Проверяем, что главная страница, страница отдельной новости,
+    страницы регистрации пользователей, входа в учётную запись и выхода из неё
+    доступны анонимным пользователям.
+    """
     url = reverse(name, args=args)
     response = client.get(url)
     assert response.status_code == HTTPStatus.OK
@@ -39,9 +47,16 @@ def test_pages_availability_for_anonymous_user(client, name, args):
     )
 )
 def test_availability_for_comment_edit_and_delete(
-        parametrized_client, expected_status, name, args):
+        parametrized_client,
+        expected_status,
+        name,
+        args
+):
     """
-    Проверяем доступность страниц для редактирования и удаления комментария.
+    Проверяем, что страницы удаления и редактирования комментария
+    доступны только автору комментария, авторизованный пользователь не может
+    зайти на страницы редактирования или удаления чужих комментариев
+    (возвращается ошибка 404).
     """
     url = reverse(name, args=args)
     response = parametrized_client.get(url)
@@ -55,14 +70,18 @@ def test_availability_for_comment_edit_and_delete(
         ('news:delete', pytest.lazy_fixture('id_comment_for_args')),
     ),
 )
-def test_redirect_for_anonymous_client(client, name, args):
+def test_redirect_for_anonymous_client(
+        client,
+        name,
+        args
+):
     """
-    Проверяем перенаправление на страницу входа
-    для неавторизованных пользователей.
+    Проверяем, что при попытке перейти на страницу редактирования или
+    удаления комментария анонимный пользователь
+    перенаправляется на страницу авторизации.
     """
     login_url = reverse('users:login')
     url = reverse(name, args=args)
     expected_url = f'{login_url}?next={url}'
     response = client.get(url)
-    print(response)
     assertRedirects(response, expected_url)

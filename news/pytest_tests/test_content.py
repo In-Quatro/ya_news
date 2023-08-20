@@ -7,17 +7,26 @@ HOME_URL = reverse('news:home')
 
 
 @pytest.mark.django_db
-def test_news_count(client, some_news):
-    """Проверяем что на главной странице отображается не больше 10 новостей."""
+def test_news_count(
+        client,
+        some_news
+):
+    """Проверяем, что количество новостей на главной странице — не более 10."""
     response = client.get(HOME_URL)
     object_list = response.context['object_list']
-    new_count = len(object_list)
-    assert new_count == settings.NEWS_COUNT_ON_HOME_PAGE
+    news_count = len(object_list)
+    assert news_count == settings.NEWS_COUNT_ON_HOME_PAGE
 
 
 @pytest.mark.django_db
-def test_news_order(client, some_news):
-    """Проверяем что новости выведены на странице от новых к старым."""
+def test_news_order(
+        client,
+        some_news
+):
+    """
+    Проверяем, что новости отсортированы от самой свежей к самой старой.
+    Свежие новости в начале списка.
+    """
     response = client.get(HOME_URL)
     object_list = response.context['object_list']
     all_dates = [comments.date for comments in object_list]
@@ -25,10 +34,14 @@ def test_news_order(client, some_news):
     assert all_dates == sorted_dates
 
 
-def test_comments_order(client, id_news_for_args, some_comments):
+def test_comments_order(
+        client,
+        id_news_for_args,
+        some_comments
+):
     """
-    Проверяем что комментарии на странице с новостью
-    отображаются от старых к новым.
+    Проверяем, что комментарии на странице отдельной новости отсортированы
+    в хронологическом порядке: старые в начале списка, новые — в конце.
     """
     url = reverse('news:detail', args=id_news_for_args)
     response = client.get(url)
@@ -41,15 +54,20 @@ def test_comments_order(client, id_news_for_args, some_comments):
 @pytest.mark.parametrize(
     'parametrized_client, form_in_context',
     (
-    (pytest.lazy_fixture('author_client'), True),
-    (pytest.lazy_fixture('client'), False)
+        (pytest.lazy_fixture('author_client'), True),
+        (pytest.lazy_fixture('client'), False)
      )
 )
 def test_pages_contains_form(
-        parametrized_client, id_news_for_args, news, form_in_context):
+        parametrized_client,
+        id_news_for_args,
+        news,
+        form_in_context
+):
     """
-    Проверяем наличие формы для комментария на подробной странице новости
-    у авторизованного и не авторизованного пользователя.
+    Проверяем, что анонимному пользователю недоступна форма
+    для отправки комментария на странице отдельной новости,
+    а авторизованному доступна.
     """
     url = reverse('news:detail', args=id_news_for_args)
     response = parametrized_client.get(url)

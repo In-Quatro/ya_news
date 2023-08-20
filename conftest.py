@@ -2,11 +2,10 @@ from datetime import datetime, timedelta
 
 import pytest
 from django.utils import timezone
-from news.models import Comment, News
 
+from news.models import Comment, News
 from news.forms import BAD_WORDS
 
-COMMENT_TEXT = 'Текст комментария'
 
 @pytest.fixture
 def author(django_user_model):

@@ -8,22 +8,26 @@ from news.models import Comment
 
 
 def test_anonymous_user_cant_create_comment(
-        id_news_for_args, client, form_data):
-    """
-    Проверяем, что неавторизованный пользователь
-    не может создавать комментарий.
-    """
+        id_news_for_args,
+        client,
+        form_data
+):
+    """Проверяем, что анонимный пользователь не может отправить комментарий."""
     url = reverse('news:detail', args=id_news_for_args)
     client.post(url, data=form_data)
-    comments_count = Comment.objects.count()
-    assert comments_count == 0
+    assert Comment.objects.count() == 0
 
 
 def test_user_can_create_comment(
-        id_news_for_args, author_client, form_data, news, author):
+        id_news_for_args,
+        author_client,
+        form_data,
+        news,
+        author
+):
     """
     Проверяем, что авторизованный пользователь
-    может создавать комментарий.
+    может отправить комментарий.
     """
     url = reverse('news:detail', args=id_news_for_args)
     response = author_client.post(url, data=form_data)
@@ -37,11 +41,14 @@ def test_user_can_create_comment(
 
 
 def test_user_cant_use_bad_words(
-        admin_client, bad_words_data, id_news_for_args):
+        admin_client,
+        bad_words_data,
+        id_news_for_args
+):
     """
-        Проверяем, что авторизованный пользователь
-        не может создавать комментарий с запрещенными словами.
-        """
+    Проверяем, что если комментарий содержит запрещённые слова,
+    он не будет опубликован, а форма вернёт ошибку.
+    """
     url = reverse('news:detail', args=id_news_for_args)
     response = admin_client.post(url, data=bad_words_data)
     assertFormError(response, 'form', 'text', errors=WARNING)
@@ -50,10 +57,12 @@ def test_user_cant_use_bad_words(
 
 
 def test_author_can_delete_comment(
-        author_client, id_comment_for_args, id_news_for_args):
+        author_client,
+        id_comment_for_args,
+        id_news_for_args
+):
     """
-    Проверяем, что автор комментария
-    может удалять свои комментарии.
+    Проверяем, что авторизованный пользователь может удалять свои комментарии.
     """
     news_url = reverse('news:detail', args=id_news_for_args)
     url = reverse('news:delete', args=id_comment_for_args)
@@ -65,10 +74,12 @@ def test_author_can_delete_comment(
 
 
 def test_user_cant_delete_comment_of_another_user(
-        admin_client, id_comment_for_args):
+        admin_client,
+        id_comment_for_args
+):
     """
-    Проверяем, что авторизованный пользователь
-    не может удалять чужие комментарий.
+    Проверяем, что авторизованный пользователь не может
+    удалять чужие комментарии.
     """
     edit_url = reverse('news:delete', args=id_comment_for_args)
     response = admin_client.post(edit_url)
@@ -78,12 +89,15 @@ def test_user_cant_delete_comment_of_another_user(
 
 
 def test_author_can_edit_comment(
-        author_client, id_comment_for_args, form_data,
-        id_news_for_args, comment
+        author_client,
+        id_comment_for_args,
+        form_data,
+        id_news_for_args,
+        comment
 ):
     """
-    Проверяем, что автор комментария
-    может редактировать свои комментарии.
+    Проверяем, что авторизованный пользователь может
+    редактировать свои комментарии.
     """
     news_url = reverse('news:detail', args=id_news_for_args)
     edit_url = reverse('news:edit', args=id_comment_for_args)
@@ -95,13 +109,18 @@ def test_author_can_edit_comment(
 
 
 def test_user_cant_edit_comment_of_another_user(
-        id_comment_for_args, admin_client, form_data, comment):
+        id_comment_for_args,
+        admin_client,
+        form_data,
+        comment
+):
     """
-    Проверяем, что авторизованный пользователь
-    не может редактировать чужие комментарий.
+    Проверяем, что авторизованный пользователь не может
+    редактировать чужие комментарии.
     """
+    text_comment = comment.text
     edit_url = reverse('news:edit', args=id_comment_for_args)
     response = admin_client.post(edit_url, data=form_data)
     assert response.status_code == HTTPStatus.NOT_FOUND
     comment.refresh_from_db()
-    assert comment.text == comment.text
+    assert comment.text == text_comment
