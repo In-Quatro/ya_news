@@ -107,7 +107,6 @@ def test_author_can_edit_comment(
     assert comment.news == news
 
 
-
 def test_user_cant_edit_comment_of_another_user(
         url_edit,
         id_comment_for_args,

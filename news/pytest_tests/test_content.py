@@ -52,7 +52,6 @@ def test_comments_order(
 @pytest.mark.parametrize(
     'parametrized_client, form_in_context',
     (
-        # (pytest.lazy_fixture('client'), False),
         (pytest.lazy_fixture('author_client'), True),
         (pytest.lazy_fixture('client'), False)
      )
