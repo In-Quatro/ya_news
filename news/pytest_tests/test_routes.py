@@ -3,31 +3,24 @@ from http import HTTPStatus
 import pytest
 from pytest_django.asserts import assertRedirects
 
-from django.urls import reverse
-
 
 @pytest.mark.django_db
 @pytest.mark.parametrize(
-    'name, args',
-    (
-        ('news:home', None),
-        ('news:detail', pytest.lazy_fixture('id_news_for_args')),
-        ('users:login', None),
-        ('users:logout', None),
-        ('users:signup', None),
-    ),
+    'url',
+    (pytest.lazy_fixture('url_home'),
+     pytest.lazy_fixture('url_detail'),
+     pytest.lazy_fixture('url_login'),
+     pytest.lazy_fixture('url_logout'),
+     pytest.lazy_fixture('url_signup')
+     )
 )
 def test_pages_availability_for_anonymous_user(
+        url,
         client,
-        name,
-        args
 ):
-    """
-    Проверяем, что главная страница, страница отдельной новости,
+    """Проверяем, что главная страница, страница отдельной новости,
     страницы регистрации пользователей, входа в учётную запись и выхода из неё
-    доступны анонимным пользователям.
-    """
-    url = reverse(name, args=args)
+    доступны анонимным пользователям."""
     response = client.get(url)
     assert response.status_code == HTTPStatus.OK
 
@@ -40,48 +33,39 @@ def test_pages_availability_for_anonymous_user(
     ),
 )
 @pytest.mark.parametrize(
-    'name, args',
-    (
-        ('news:edit', pytest.lazy_fixture('id_comment_for_args')),
-        ('news:delete', pytest.lazy_fixture('id_comment_for_args'))
-    )
+    'url',
+    (pytest.lazy_fixture('url_edit'),
+     pytest.lazy_fixture('url_delete')
+     )
 )
 def test_availability_for_comment_edit_and_delete(
+        url,
         parametrized_client,
         expected_status,
-        name,
-        args
+
 ):
-    """
-    Проверяем, что страницы удаления и редактирования комментария
+    """Проверяем, что страницы удаления и редактирования комментария
     доступны только автору комментария, авторизованный пользователь не может
     зайти на страницы редактирования или удаления чужих комментариев
-    (возвращается ошибка 404).
-    """
-    url = reverse(name, args=args)
+    (возвращается ошибка 404)."""
     response = parametrized_client.get(url)
     assert response.status_code == expected_status
 
 
 @pytest.mark.parametrize(
-    'name, args',
-    (
-        ('news:edit', pytest.lazy_fixture('id_comment_for_args')),
-        ('news:delete', pytest.lazy_fixture('id_comment_for_args')),
-    ),
+    'url',
+    (pytest.lazy_fixture('url_edit'),
+     pytest.lazy_fixture('url_delete')
+     )
 )
 def test_redirect_for_anonymous_client(
+        url,
+        url_login,
         client,
-        name,
-        args
 ):
-    """
-    Проверяем, что при попытке перейти на страницу редактирования или
-    удаления комментария анонимный пользователь
-    перенаправляется на страницу авторизации.
-    """
-    login_url = reverse('users:login')
-    url = reverse(name, args=args)
-    expected_url = f'{login_url}?next={url}'
+    """Проверяем, что при попытке перейти на страницу редактирования
+    или удаления комментария анонимный пользователь перенаправляется
+    на страницу авторизации."""
+    expected_url = f'{url_login}?next={url}'
     response = client.get(url)
     assertRedirects(response, expected_url)
