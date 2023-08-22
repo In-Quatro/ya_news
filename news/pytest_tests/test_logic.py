@@ -98,13 +98,18 @@ def test_author_can_edit_comment(
 ):
     """Проверяем, что авторизованный пользователь может
     редактировать свои комментарии."""
+    comment_author_before = comment.author
+    comment_news_before = comment.news
     response = author_client.post(url_edit, data=form_data)
     url_to_comments = url_detail + '#comments'
     assertRedirects(response, url_to_comments)
     comment.refresh_from_db()
-    assert comment.text == form_data['text']
-    assert comment.author == author
-    assert comment.news == news
+    comment_text_after = comment.text
+    comment_author_after = comment.author
+    comment_news_after = comment.news
+    assert comment_text_after == form_data['text']
+    assert comment_author_before == comment_author_after
+    assert comment_news_before == comment_news_after
 
 
 def test_user_cant_edit_comment_of_another_user(
@@ -118,10 +123,15 @@ def test_user_cant_edit_comment_of_another_user(
 ):
     """Проверяем, что авторизованный пользователь не может
     редактировать чужие комментарии."""
-    text_before = comment.text
+    comment_text_before = comment.text
+    comment_author_before = comment.author
+    comment_news_before = comment.news
     response = admin_client.post(url_edit, data=form_data)
     assert response.status_code == HTTPStatus.NOT_FOUND
     comment.refresh_from_db()
-    assert comment.text == text_before
-    assert comment.author == author
-    assert comment.news == news
+    comment_text_after = comment.text
+    comment_author_after = comment.author
+    comment_news_after = comment.news
+    assert comment_text_before == comment_text_after
+    assert comment_author_before == comment_author_after
+    assert comment_news_before == comment_news_after
